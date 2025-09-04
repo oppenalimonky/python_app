@@ -1,54 +1,22 @@
-name: Multi-Platform Build
+name: Build Windows Executable
 
 on:
   push:
-    tags: [ 'v*' ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        include:
-          - os: windows-latest
-            executable_name: ImageProcessor.exe
-            build_command: pyinstaller --onefile --windowed --name "ImageProcessor" main.py
-          - os: ubuntu-latest
-            executable_name: ImageProcessor
-            build_command: pyinstaller --onefile --name "ImageProcessor" main.py
-          - os: macos-latest
-            executable_name: ImageProcessor
-            build_command: pyinstaller --onefile --windowed --name "ImageProcessor" main.py
-    
-    runs-on: ${{ matrix.os }}
-    
+    runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4           # 改为 v4
+    - uses: actions/setup-python@v4       # 改为 v4
       with:
         python-version: '3.9'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller
-    
-    # Linux特殊依赖
-    - name: Install Linux dependencies
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-glx
-    
-    - name: Build executable
-      run: ${{ matrix.build_command }}
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - run: |
+        pip install streamlit opencv-python pillow numpy pyinstaller
+        pyinstaller --onefile --name "ImageProcessor" main.py
+    - uses: actions/upload-artifact@v4    # 改为 v4 ⬅️ 关键修复
       with:
-        name: ${{ matrix.os }}-executable
-        path: dist/${{ matrix.executable_name }}
+        name: windows-exe
+        path: dist/ImageProcessor.exe
